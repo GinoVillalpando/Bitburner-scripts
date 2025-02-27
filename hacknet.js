@@ -86,7 +86,7 @@ class BudgetTracker {
 
 /**
  * The main function that simulates managing hacknet nodes through a budget tracker.
- * @param {NS} ns - Namespace object providing access to the scripting API.
+ * @param {NS} ns - NetScript API functions.
  */
 export async function main(ns) {
   const { hacknet, tprint} = ns;
@@ -108,7 +108,7 @@ export async function main(ns) {
 /**
  * Asynchronously processes the upgrade of hacknet nodes and manages the budget for those upgrades.
  * @param {Array} hacknetNodes - An array of hacknet nodes indices to be upgraded.
- * @param {NS} ns - Namespace object providing access to the scripting API.
+ * @param {NS} ns - NetScript API functions
  * @returns {Promise<Array>} - A promise resolving to an array with the upgrade information.
  */
 async function upgradeNodes(hacknetNodes, ns) {
