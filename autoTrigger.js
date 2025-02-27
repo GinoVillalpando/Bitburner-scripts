@@ -28,6 +28,14 @@ export function logging(ns, neighbor) {
   write('neighbors.txt', `neighbors for ${neighbor}: ${moreNeighbors}\n`);
 }
 
+/**
+ * recursive function for iterating all the available networks and penetrating security measures
+ * runs grow(), weaken(), and hack() on the available networks
+ * 
+ * @param {string} currentServer - the current server we will use to start our iteration
+ * @param {Set<string>} visited - Set() of servers we have already visted   
+ * @param {NS} ns - Netscript functions API
+ */
 export async function recursiveNeighbors(currentServer, visited, ns) {
   const { scan, hasRootAccess, getServerNumPortsRequired, getServer, nuke, ftpcrack, relaysmtp, brutessh, sqlinject, httpworm, rm } = ns;
 
