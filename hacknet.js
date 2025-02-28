@@ -89,20 +89,12 @@ class BudgetTracker {
  * @param {NS} ns - Namespace object providing access to the scripting API.
  */
 export async function main(ns) {
-  const { hacknet, tprint} = ns;
+  const { hacknet } = ns;
   const { numNodes } = hacknet;
 
   const hacknetNodes = Array.from({ length: numNodes() }, (node, idx) => idx)
 
-  await upgradeNodes(hacknetNodes, ns).then((response) => {
-    // response.forEach(({ upgradeInfo }) => {
-    //   tprint(upgradeInfo.level.budgetTracker.generateOverallReport('level'));
-    //   tprint(upgradeInfo.ram.budgetTracker.generateOverallReport('ram'));
-    //   tprint(upgradeInfo.cores.budgetTracker.generateOverallReport('cores'));
-    // })
-
-    // tprint('No more upgrades can be done, exiting the loop.');
-  })
+  await upgradeNodes(hacknetNodes, ns)
 }
 
 /**
@@ -112,7 +104,7 @@ export async function main(ns) {
  * @returns {Promise<Array>} - A promise resolving to an array with the upgrade information.
  */
 async function upgradeNodes(hacknetNodes, ns) {
-  const { hacknet, getPlayer, tprintf } = ns;
+  const { hacknet, getPlayer } = ns;
   const { getNodeStats, numNodes, upgradeLevel, upgradeRam, upgradeCore, getLevelUpgradeCost, getRamUpgradeCost, getCoreUpgradeCost } = hacknet;
 
   const { money } = getPlayer();
@@ -141,8 +133,6 @@ async function upgradeNodes(hacknetNodes, ns) {
 
     // update budget after partsToUpgrade has been updated
     budget = partsToUpgrade > 0 ? baseBudget / nodesToUpgrade / partsToUpgrade : baseBudget / nodesToUpgrade;
-
-    // tprintf(`budget eval: ${budget} / ${nodesToUpgrade} / ${partsToUpgrade} = ${budget}`);
 
     let upgradeInfo = {
       level: {
