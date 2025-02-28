@@ -3,13 +3,16 @@
  * @param {NS} ns 
  */
 export async function main(ns) {
-  const { share, pid, exec } = ns
+  let alreadyVisited = new Set();
 
-  exec('tail.js', 'home', 1, ...[pid]);
+  ns.disableLog('asleep');
+  ns.disableLog('scan');
+  ns.exec('tail.js', 'home', 1, ...[ns.pid]);
+
 
   while (true) {
-    let alreadyVisited = new Set();
-    await share()
+    alreadyVisited = new Set();
+    await ns.asleep(3000);
     await recursiveNeighbors('home', alreadyVisited, ns);
   }
 }
@@ -22,26 +25,23 @@ export async function main(ns) {
  * @param {NS} ns - Namespace object providing access to the scripting API.
  * @returns {Promise<Set>}
  */
-export const recursiveNeighbors = (currentServer, visited, ns) => {
-  const { scan, getServer, print, } = ns;
+export const recursiveNeighbors = async (currentServer, visited, ns) => {
+  visited.add(currentServer);
 
-  return new Promise((resolve) => {
-    visited.add(currentServer);
+  const neighbors = ns.scan(currentServer);
+  ns.print(`\n starting scan on ${currentServer}... \n`);
 
-    const neighbors = scan(currentServer); // Who's next door in server world?
+  for (const neighbor of neighbors) {
+    if (!visited.has(neighbor) && ns.hasRootAccess(neighbor)) {
+      const threads = ns.args[0];
+      await ns.grow(neighbor, {threads});
+      await ns.weaken(neighbor, {threads});
+      await ns.hack(neighbor, { threads });
+      // ns.print(`neighbor of ${currentServer}: ${neighbor}`);
+      await ns.asleep(3000); // Ensuring a delay of 3000 ms between each neighbor's processing
+      await recursiveNeighbors(neighbor, visited, ns);
+    }
+  }
 
-    print(`\n starting scan on ${currentServer}... \n`)
-
-    neighbors.forEach(async (neighbor) => {
-      const { purchasedByPlayer } = getServer(neighbor);
-
-      if (!visited.has(neighbor) && !purchasedByPlayer) {
-        // logging
-        print(`neighbor of ${currentServer}: ${neighbor}`);
-        await recursiveNeighbors(neighbor, visited, ns);
-      }
-    })
-
-    resolve(visited)
-  })
+  return visited;
 }

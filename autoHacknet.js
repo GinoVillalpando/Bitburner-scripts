@@ -1,6 +1,7 @@
 /** @param {NS} ns */
 export async function main(ns) {
-  const { getPlayer, exec, printf, hacknet, pid } = ns;
+  const { getPlayer, exec, printf, hacknet, pid, share, formatNumber} = ns;
+  let loop = true
 
   exec("tail.js", 'home', 1, ...[pid]);
 
@@ -8,15 +9,19 @@ export async function main(ns) {
     ns.args.push(5000000);
   }
 
-  while (true) {
+  while (loop) {
     const { money } = getPlayer();
     const { numNodes, maxNumNodes } = hacknet;
 
-    printf(`running auto hacknet - money available ${money} - purchased nodes: ${numNodes()} - max number nodes available: ${maxNumNodes()}`)
+    await share();
+
+    printf(`running auto hacknet - money available $${formatNumber(money, 2)} - purchased nodes: ${numNodes()} - max number nodes available: ${maxNumNodes()}`)
 
     if (money >= ns.args[0]) {
       await new Promise((resolve) => {
-        exec('purchaseNodes.js', 'home');
+        setTimeout(() => {
+         exec('purchaseNodes.js', 'home');
+        }, 3000)
 
         setTimeout(() => {
           exec('hacknet.js', 'home');
@@ -27,6 +32,8 @@ export async function main(ns) {
 
         }, 5000)
       })
+    } else {
+      printf(`unable to purchase or upgrade hacknet nodes due to insufficent funds: $${formatNumber(money, 2)}`)
     }
   }
 }

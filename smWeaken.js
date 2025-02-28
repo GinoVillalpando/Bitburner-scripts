@@ -1,47 +1,50 @@
 /** @param {NS} ns */
 export async function main(ns) {
-  const { getHostname, getServerSecurityLevel, getServerMinSecurityLevel, hackAnalyzeChance, exec, print, weaken, atExit, closeTail, pid } = ns;
-
-  const hostName = getHostname();
-  let isNotWeak = true;
+  const {
+    getHostname,
+    getServerSecurityLevel,
+    getServerMinSecurityLevel,
+    hackAnalyzeChance,
+    exec,
+    print,
+    weaken,
+    atExit,
+    closeTail,
+    pid,
+    spawn
+  } = ns;
 
   if (ns.args[0] === 'tail') {
     exec("tail.js", 'home', 1, ...[pid]);
   }
 
+  const hostName = getHostname();
+  let isNotWeak = true;
+  const threads = ns.args[0] >= 1 ? ns.args[0] : 1;
+  const hackT = (Math.floor(ns.getServerMaxRam(hostName) / ns.getScriptRam("smHack.js")));
+
   while (isNotWeak) {
     const serverSecurityLvl = getServerSecurityLevel(hostName);
     const minimalSecurityLvl = getServerMinSecurityLevel(hostName);
     const chance = hackAnalyzeChance(hostName);
-    print(`hack chances: ${chance} for ${hostName}`)
 
-    await weaken(hostName)
-    print(`security level: ${serverSecurityLvl} | min security level: ${minimalSecurityLvl}`)
+    print(`hack chances: ${ns.formatPercent(chance)}% for ${hostName}`)
 
-    if (chance >= 0.4) {
-      exec("smHack.js", hostName);
-    }
+    await weaken(hostName, { threads, stock: true })
+    print(`security level: ${serverSecurityLvl} | min security level: ${minimalSecurityLvl}`);
 
-    if (serverSecurityLvl < minimalSecurityLvl) {
+    if (serverSecurityLvl <= minimalSecurityLvl || chance >= 0.5) {
       isNotWeak = false;
     }
   }
 
-  ns.exec("smHack.js", host);
+  if (hackT === 0) {
+    spawn("smHack.js")
+  } else {
+    spawn("smHack.js", hackT, ...[hackT])
+  }
 
   atExit(() => {
-    execAutoHacks(ns, hostName);
-    print('at exit on weaken', hostName);
     closeTail(pid);
   })
-}
-
-/**
- * exec auto scripts
- * @param {NS} ns - NetScript API functions
- * @param {string} host - host name
- */
-function execAutoHacks(ns, host) {
-  ns.exec("smGrow.js", host);
-  ns.exec("smHack.js", host);
 }
