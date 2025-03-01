@@ -34,10 +34,12 @@ export const recursiveHack = async (currentServer, visited, ns) => {
   const threads = ns.args[0];
 
   for (const neighbor of neighbors) {
+    const { purchasedByPlayer } = ns.getServer(neighbor);
+
     const isAccessible = !visited.has(neighbor) && ns.hasRootAccess(neighbor);
     const isHackable = ns.getHackingLevel() >= ns.getServerRequiredHackingLevel(neighbor);
 
-    if (isAccessible && isHackable) {
+    if (isAccessible && isHackable && !purchasedByPlayer) {
       ns.print(`\n starting job on ${neighbor}... \n`);
 
       // perform hack procedures
