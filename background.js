@@ -1,28 +1,57 @@
 /** @param {NS} ns */
 export async function main(ns) {
-  let doc = eval("document");
 
-  const imageUrl = 'https://wallpaperaccess.com/full/5248853.gif'
+  while (true) {
 
-  doc.body.style.width = "100%";
-  doc.body.style.height = "100vh";
+    let doc = eval("document");
 
-  doc.body.style.backgroundImage = `url(${imageUrl})`;
-  doc.body.style.backgroundSize = "cover";
-  doc.body.style.backgroundRepeat = "no-repeat";
-  doc.body.style.backgroundPosition = "center";
-  doc.body.style.backgroundAttachment = "fixed";
+    const imageUrl = 'https://wallpaperaccess.com/full/5248853.gif'
+
+    doc.body.style.width = "100%";
+    doc.body.style.height = "100vh";
+
+    doc.body.style.backgroundImage = `url(${imageUrl})`;
+    doc.body.style.backgroundSize = "cover";
+    doc.body.style.backgroundRepeat = "no-repeat";
+    doc.body.style.backgroundPosition = "center";
+    doc.body.style.backgroundAttachment = "fixed";
 
 
-  const uiElements = doc.querySelectorAll('.MuiBox-root');
+    const uiElements = doc.querySelectorAll('.react-draggable');
+    const resizeableUiElements = doc.querySelectorAll('.react-resizeable');
+    const monacoStyles = doc.querySelectorAll('.monaco-editor-background')
+    const focusContainers = doc.querySelectorAll('.MuiPaper-elevation')
 
-  for (let element of uiElements) {
-    element.style.background = 'rgba(0, 0, 0, 0.3)';
 
-    element.style.backdropFilter = 'blur(5px)';
-    element.style.borderRadius = '10px';
-    element.style.padding = "5px";
+    for (let element of uiElements) {
+      element.style.backdropFilter = 'blur(5px)';
+      element.style.borderRadius = '10px';
+    }
+
+    for (let element of uiElements) {
+      element.style.paddingBottom = "30px";
+    }
+
+    for (let container of focusContainers) {
+      container.style.backdropFilter = 'blur(5px)';
+      container.style.borderRadius = '10px';
+      container.style.padding = "5px";
+    }
+
+    if (monacoStyles && monacoStyles.length >= 1) {
+      for (let editor of monacoStyles) {
+        editor.style.backdropFilter = 'blur(5px)';
+        editor.style.borderRadius = '10px';
+        editor.style.background = 'rgba(0, 0, 0, 0.5)';
+      }
+    }
+
+
+
+
+    await ns.share();
   }
+
 
 
   /**
