@@ -14,7 +14,6 @@ export async function main(ns) {
 
   while (true) {
     alreadyVisited = new Set();
-    await ns.asleep(3000);
     await recursiveHack('home', alreadyVisited, ns);
   }
 }
@@ -40,6 +39,8 @@ export const recursiveHack = async (currentServer, visited, ns) => {
     const isHackable = ns.getHackingLevel() >= ns.getServerRequiredHackingLevel(neighbor);
 
     if (isAccessible && isHackable && !purchasedByPlayer) {
+      await ns.share();
+
       ns.print(`\n starting job on ${neighbor}... \n`);
 
       // perform hack procedures
@@ -49,7 +50,7 @@ export const recursiveHack = async (currentServer, visited, ns) => {
       await ns.weaken(neighbor, { threads });
       await ns.hack(neighbor, { threads });
 
-      await ns.asleep(3000); // Ensuring a delay of 3000 ms between hackjob
+      await ns.asleep(300); // Ensuring a delay of 3000 ms between hackjob
       await recursiveHack(neighbor, visited, ns);
     }
   }

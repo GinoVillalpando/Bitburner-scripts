@@ -4,7 +4,7 @@ export async function main(ns) {
   const { money } = getPlayer();
   const { getPurchaseNodeCost, purchaseNode } = hacknet;
 
-  if (getPurchaseNodeCost() <= money * 0.01) {
+  if (getPurchaseNodeCost() <= money * 0.025) {
     tprintf('purchasing node...');
     purchaseNode();
   }
