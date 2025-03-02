@@ -198,7 +198,7 @@ async function upgradeNodes(hacknetNodes, ns, baseBudgetTracker) {
       const budget = partsToUpgrade >= 1 && nodesToUpgrade >= 1
         ? baseBudgetTracker.budget / nodesToUpgrade / partsToUpgrade
         : 0;
-        
+
       ns.print(`hacknet-node-${nodeIdx} upgrade budget for ${partsToUpgrade} part(s): ${ns.formatNumber(budget)} \n`);
 
       Object.keys(upgradeInfo).forEach((key) => {
@@ -224,7 +224,7 @@ async function upgradeNodes(hacknetNodes, ns, baseBudgetTracker) {
           ns.print(`Balance for ${key}: ${ns.formatNumber(balance)}`)
 
           if (isWithinCategoryBudget && isWithinOverallBudget) {
-            baseBudgetTracker.addExpense(upgrade.cost,  `hacknet-node-${nodeIdx}-${key}`);
+            baseBudgetTracker.addExpense(upgrade.cost, `hacknet-node-${nodeIdx}-${key}`);
             upgradePart();
           } else {
             upgrade.loop = false;
