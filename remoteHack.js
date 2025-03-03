@@ -7,7 +7,7 @@
 export async function main(ns) {
   let alreadyVisited = new Set();
 
-  ns.disableLog('asleep');
+  ns.disableLog('sleep');
   ns.disableLog('scan');
   ns.exec('tail.js', 'home', 1, ...[ns.pid]);
 
@@ -50,7 +50,7 @@ export const recursiveHack = async (currentServer, visited, ns) => {
       await ns.weaken(neighbor, { threads });
       await ns.hack(neighbor, { threads });
 
-      await ns.asleep(300); // Ensuring a delay of 3000 ms between hackjob
+      await ns.sleep(300); // Ensuring a delay of 3000 ms between hackjob
       await recursiveHack(neighbor, visited, ns);
     }
   }

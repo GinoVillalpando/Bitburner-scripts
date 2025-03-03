@@ -10,26 +10,28 @@ export async function main(ns) {
     ns.args.push(5000000);
   }
 
+  ns.disableLog('sleep');
+  ns.disableLog('share');
+
   exec('hacknet.js', hostName);
-  ns.asleep(3000);
 
   while (loop) {
     const { money } = getPlayer();
-    const { numNodes, maxNumNodes } = hacknet;
+    const { numNodes, getPurchaseNodeCost, purchaseNode } = hacknet;
+    const moneyForPurchase = money * 0.025
+    const costForNextNode = getPurchaseNodeCost()
 
     await share();
 
-    printf(`running auto hacknet - money available $${formatNumber(money, 2)} - purchased nodes: ${numNodes()} - max number nodes available: ${maxNumNodes()}`)
+    printf(`\n [RUN] owned nodes: ${numNodes()} \n requirements for next node: $${ns.formatNumber(moneyForPurchase)}/$${ns.formatNumber(costForNextNode)} \n`)
 
     if (money >= ns.args[0]) {
-      await new Promise((resolve) => {
-        ns.asleep(3000);
-        exec('purchaseNodes.js', hostName);
-
-        resolve('executed')
-      })
+      if (costForNextNode <= moneyForPurchase) {
+        purchaseNode();
+      }
+      await ns.sleep(3000);
     } else {
-      printf(`unable to purchase or upgrade hacknet nodes due to insufficent funds: $${formatNumber(money, 2)}`)
+      printf(`unable to purchase or upgrade hacknet nodes due to insufficent funds: $${formatNumber(money)}/$${formatNumber(ns.args[0])}`)
     }
   }
 }

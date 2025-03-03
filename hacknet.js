@@ -7,6 +7,7 @@ export class BudgetTracker {
    * @private
    */
   budget = 0;
+  categoryBudget = 0;
   /**
    * List of all expenses details.
    * @private
@@ -32,6 +33,11 @@ export class BudgetTracker {
    */
   updateBudget(amount) {
     this.budget = amount;
+    this.expenses = [];
+  }
+
+  updateCategoryBudget(amount) {
+    this.categoryBudget = amount;
   }
 
   /**
@@ -68,9 +74,9 @@ export class BudgetTracker {
    * evaluates the budget of all the category expenses.
    * @returns {Record<string, boolean | number>} - object conatining the boolean value if within budget and the balance amount.
    */
-  checkCategoryBudget(amount = 0, category, categoryBudget) {
+  checkCategoryBudget(amount = 0, category) {
     let totalExpenses = this.expenses.reduce((acc, expense) => expense.category === category ? acc + expense.amount : acc, 0);
-    let evalualtion = categoryBudget - totalExpenses;
+    let evalualtion = this.categoryBudget - totalExpenses;
 
     return {
       isWithinCategoryBudget: evalualtion - amount > 0,
@@ -87,7 +93,11 @@ export class BudgetTracker {
     let totalExpenses = this.expenses.reduce((acc, expense) => acc + expense.amount, 0);
     let balance = this.budget - totalExpenses;
 
-    return `[Report] Budget: ${ns.formatNumber(this.budget)}, Expenses: ${ns.formatNumber(totalExpenses)}, Balance: ${ns.formatNumber(balance)}`;
+    return {
+      report: `[Report] Budget: ${ns.formatNumber(this.budget)}, Expenses: ${ns.formatNumber(totalExpenses)}, Balance: ${ns.formatNumber(balance)}`,
+      balance,
+      expenses: this.expenses
+    };
   }
 }
 
@@ -103,6 +113,7 @@ export async function main(ns) {
   const decimalPercent = 0.05;
 
   let baseMoney = money;
+  let remainingBalance = 0;
 
   exec("tail.js", 'home', 1, ...[pid]);
 
@@ -118,19 +129,24 @@ export async function main(ns) {
     let newBudget = newMoney * decimalPercent;
 
     if (newMoney >= baseMoney + (baseMoney * decimalPercent)) {
-      budgetTracker.updateBudget(newBudget);
+      budgetTracker.updateBudget(newBudget + remainingBalance);
       baseMoney = newMoney;
     }
 
     ns.print(` \n
-      new money: ${ns.formatNumber(newMoney)} \n
-      base money: ${ns.formatNumber(baseMoney)} \n 
-      money for next run: ${ns.formatNumber(baseMoney + (baseMoney * decimalPercent))} \n 
+      starting cash: ${ns.formatNumber(baseMoney)} \n 
+      current cash: ${ns.formatNumber(newMoney)} \n
+      cash goal til next run: ${ns.formatNumber(baseMoney + (baseMoney * decimalPercent))} \n 
     `)
 
-    await ns.asleep(3000);
+    await ns.sleep(3000);
     await upgradeNodes(hacknetNodes, ns, budgetTracker).then(() => {
-      ns.print(`${budgetTracker.generateOverallReport(ns)}`);
+      const { report, balance, expenses } = budgetTracker.generateOverallReport(ns);
+      ns.print(`${report}`);
+
+      if (balance > 0 && expenses > 0) {
+        remainingBalance = balance;
+      }
     })
   }
 }
@@ -158,17 +174,14 @@ async function upgradeNodes(hacknetNodes, ns, baseBudgetTracker) {
       let upgradeInfo = {
         level: {
           cost: getLevelUpgradeCost(nodeIdx, multi),
-          loop: true,
           stats: levelStats,
         },
         ram: {
           cost: getRamUpgradeCost(nodeIdx, multi),
-          loop: true,
           stats: ramStats,
         },
         cores: {
           cost: getCoreUpgradeCost(nodeIdx, multi),
-          loop: true,
           stats: coreStats,
         }
       }
@@ -192,18 +205,18 @@ async function upgradeNodes(hacknetNodes, ns, baseBudgetTracker) {
         delete upgradeInfo.cores
       }
 
-      ns.print(`nodes: ${numNodes()}`)
-
       // update budget after partsToUpgrade has been updated
       const budget = partsToUpgrade >= 1 && nodesToUpgrade >= 1
         ? baseBudgetTracker.budget / nodesToUpgrade / partsToUpgrade
         : 0;
 
+      baseBudgetTracker.updateCategoryBudget(budget);
+
       ns.print(`hacknet-node-${nodeIdx} upgrade budget for ${partsToUpgrade} part(s): ${ns.formatNumber(budget)} \n`);
 
-      Object.keys(upgradeInfo).forEach((key) => {
-        let upgrade = upgradeInfo[key];
+      const upgradeComponents = Object.entries(upgradeInfo);
 
+      for (const [key, upgrade] of upgradeComponents) {
         const upgradePart = () => {
           if (key === 'level') {
             upgradeLevel(nodeIdx, multi);
@@ -214,27 +227,20 @@ async function upgradeNodes(hacknetNodes, ns, baseBudgetTracker) {
           }
         }
 
-        while (upgrade.loop) {
-          const { isWithinOverallBudget }
-            = baseBudgetTracker.checkOverallBudget(upgrade.cost);
+        const { isWithinCategoryBudget, balance }
+          = baseBudgetTracker.checkCategoryBudget(upgrade.cost, `hacknet-node-${nodeIdx}-${key}`);
 
-          const { isWithinCategoryBudget, balance }
-            = baseBudgetTracker.checkCategoryBudget(upgrade.cost, `hacknet-node-${nodeIdx}-${key}`, budget);
+        ns.print(`Balance for ${key}: ${ns.formatNumber(balance)}`)
 
-          ns.print(`Balance for ${key}: ${ns.formatNumber(balance)}`)
-
-          if (isWithinCategoryBudget && isWithinOverallBudget) {
-            baseBudgetTracker.addExpense(upgrade.cost, `hacknet-node-${nodeIdx}-${key}`);
-            upgradePart();
-          } else {
-            upgrade.loop = false;
-          }
+        if (isWithinCategoryBudget) {
+          baseBudgetTracker.addExpense(upgrade.cost, `hacknet-node-${nodeIdx}-${key}`);
+          upgradePart();
         }
-      })
+      }
 
       resolve(upgradeInfo)
     })
   })
 
-  return Promise.race(hacknetPromises);
+  return await Promise.all(hacknetPromises);
 }

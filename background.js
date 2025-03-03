@@ -18,19 +18,23 @@ export async function main(ns) {
 
 
     const uiElements = doc.querySelectorAll('.react-draggable');
-    const resizeableUiElements = doc.querySelectorAll('.react-resizeable');
     const monacoStyles = doc.querySelectorAll('.monaco-editor-background')
     const focusContainers = doc.querySelectorAll('.MuiPaper-elevation')
+    const stickWidgets = doc.querySelectorAll('.sticky-widget');
 
 
     for (let element of uiElements) {
       element.style.backdropFilter = 'blur(5px)';
       element.style.borderRadius = '10px';
-    }
-
-    for (let element of uiElements) {
+      element.style.padding = "10px"
       element.style.paddingBottom = "30px";
     }
+
+    for (let widget of stickWidgets) {
+      widget.style.background = 'rgba(0, 0, 0, 0.5)';
+      widget.style.backdropFilter = 'blur(5px)';
+    }
+
 
     for (let container of focusContainers) {
       container.style.backdropFilter = 'blur(5px)';
