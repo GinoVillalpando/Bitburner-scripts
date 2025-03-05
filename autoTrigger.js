@@ -26,7 +26,7 @@ export function startHackJobs(ns, server) {
 
   const growT = (Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / ns.getScriptRam("smGrow.js")));
 
-  if (growT === 0) {
+  if (growT <= 1) {
     ns.exec("smGrow.js", server);
     return;
   }

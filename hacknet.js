@@ -62,9 +62,10 @@ export class BudgetTracker {
   checkOverallBudget(amount = 0) {
     let totalExpenses = this.expenses.reduce((acc, expense) => acc + expense.amount, 0);
     let evalualtion = this.budget - totalExpenses;
+    const isWithinOverallBudget = (evalualtion - amount) > 0
 
     return {
-      isWithinOverallBudget: evalualtion - amount > 0,
+      isWithinOverallBudget,
       balance: evalualtion - amount
     };
   }
@@ -134,9 +135,9 @@ export async function main(ns) {
     }
 
     ns.print(` \n
-      starting cash: ${ns.formatNumber(baseMoney)} \n 
-      current cash: ${ns.formatNumber(newMoney)} \n
-      cash goal til next run: ${ns.formatNumber(baseMoney + (baseMoney * decimalPercent))} \n 
+      starting cash: $${ns.formatNumber(baseMoney)}
+      current cash: $${ns.formatNumber(newMoney)}
+      cash goal til next run: $${ns.formatNumber(baseMoney + (baseMoney * decimalPercent))} \n 
     `)
 
     await ns.sleep(3000);
